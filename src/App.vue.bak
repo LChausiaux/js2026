@@ -1,0 +1,119 @@
+<template>
+	<div>
+		{{ nom }}
+		<input type="text" v-model="nom">
+
+
+		<div>
+			<h3>{{ formTitle }}</h3>
+			<div>
+				<label :class="{'error': title === ''}">Titre</label>
+				<input class="form-control" type="text" v-model="title">
+			</div>
+			<div>
+				<label :class="{'error': author === ''}">Auteur</label>
+				<input type="text" v-model="author">
+			</div>
+			<button class="btn btn-primary" v-if="mode === 'create'"
+					@click="register()"
+					:disabled="!isChecked">
+				Enregistrer
+			</button>
+			<button v-else
+					@click="update()"
+					:disabled="!isChecked">
+				Editer
+			</button>
+		</div>
+		<hr>
+		<input type="text" v-model="search">
+		Total livres : {{ bookCount }}
+		<div v-for="book in filteredBooks" style="display: flex; justify-content: start; margin-bottom: 5px">
+			<div>(#{{ book.id }}) Titre: {{ book.title }}, Auteur: {{ book.author }}</div>
+			<button @click="remove(book.id)">Supprimer</button>
+			<button @click="edit(book.id)">Editer</button>
+		</div>
+	</div>
+</template>
+
+<script setup>
+import {computed, onMounted, ref, watch} from "vue";
+
+const nom = ref('Mon nom');
+
+const title = ref('');
+const author = ref('');
+const bookId = ref(null);
+const books = ref([]);
+const mode = ref('create');
+const search = ref('');
+const bookCount = ref(0);
+
+watch(books, () => {
+	bookCount.value = books.value.length;
+}, {deep: true});
+
+onMounted(() => {
+	initialize();
+});
+
+const isChecked = computed(() => {
+	return title.value !== '' && author.value !== '';
+});
+
+const filteredBooks = computed(() => {
+	if(search.value === '') {
+		return books.value;
+	}
+
+	return books.value.filter(book => book.title.includes(search.value));
+});
+
+const formTitle = computed(() => {
+	return (mode.value === 'create' ? 'Ajouter un livre' : 'Editer le livre');
+});
+
+function initialize() {
+	title.value = 'Titre...';
+	author.value = 'Auteur...';
+}
+
+function register() {
+	books.value.push({
+		id: books.value.length + 1,
+		title: title.value,
+		author: author.value,
+	});
+	initialize();
+}
+
+function remove(id) {
+	books.value = books.value.filter(book => book.id !== id);
+
+	books.value = books.value.map((book, index) => {
+		book.id = index + 1;
+		return book;
+	});
+}
+
+function edit(id) {
+	mode.value = 'edit';
+	const book = books.value.find(el => el.id === id);
+	if(!book) {
+		return;
+	}
+
+	title.value = book.title;
+	author.value = book.author;
+	bookId.value = book.id;
+}
+
+function update() {
+	let index = books.value.findIndex(el => el.id === bookId.value);
+	books.value[index].title = title.value;
+	books.value[index].author = author.value;
+
+	mode.value = 'create';
+	initialize();
+}
+</script>
