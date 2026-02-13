@@ -1,26 +1,23 @@
 <template>
-	<div class="form-group my-4">
-		<label for="">{{ label }}</label>
-		<input :type="type" class="form-control" v-model="value">
-		<input :type="type" class="form-control" v-model="value2">
+	<div class="mb-3">
+		<label>{{ label }} </label>
+		<input class="form-control" :type="type" v-model="value" :class="{'is-invalid': showError && hasError}">
+		<div class="invalid-feedback">
+			Veuillez saisir une valeur valide
+		</div>
 	</div>
 </template>
 
 <script setup>
-	import {watch} from "vue";
-
-	const value = defineModel('value');
-	const value2 = defineModel('value2');
-
 	const props = defineProps({
+		label: String,
+		showError: Boolean,
+		hasError: Boolean,
 		type: {
 			type: String,
-			default: 'text',
-		},
-		label: String,
+			default: 'text'
+		}
 	});
 
-	watch(value, () => {
-		value.value = value.value.toUpperCase();
-	});
+	const value = defineModel();
 </script>
